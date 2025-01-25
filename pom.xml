@@ -21,13 +21,6 @@
         <sonar.login>${env.SONAR_TOKEN}</sonar.login>
     </properties>
 
-     <scm>
-        <connection>scm:git:https://github.com/warydiaz/api-hello-world.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com:warydiaz/api-hello-world.git</developerConnection>
-        <url>https://github.com/warydiaz/api-hello-world</url>
-        <tag>HEAD</tag>
-    </scm>
-
     <dependencyManagement>
         <dependencies>
             <dependency>
