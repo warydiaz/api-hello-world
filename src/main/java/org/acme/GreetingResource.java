@@ -13,4 +13,11 @@ public class GreetingResource {
     public String hello() {
         return "Hello World";
     }
+
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String hello2() {
+        System.out.println("Hello World");
+        return "Hello World";
+    }
 }
