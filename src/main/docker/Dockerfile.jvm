@@ -85,9 +85,6 @@ ENV LANGUAGE='en_US:en'
 COPY . /workspace
 WORKDIR /workspace
 
-# Paso 2: Construir el proyecto con Maven
-RUN ./mvnw clean package -DskipTests
-
 # We make four distinct layers so if there are application changes the library layers can be re-used
 COPY --chown=185 target/quarkus-app/lib/ /deployments/lib/
 COPY --chown=185 target/quarkus-app/*.jar /deployments/
