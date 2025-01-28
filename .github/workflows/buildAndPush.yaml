@@ -1,14 +1,13 @@
 name: Build and Push to Quay.io
 
 on:
-  pull_request:
+  push:
     branches:
       - main
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main'
 
     steps:
       # 1. Checkout the repository
