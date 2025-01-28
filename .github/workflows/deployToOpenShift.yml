@@ -23,7 +23,7 @@ jobs:
       # 2. Log in to OpenShift
       - name: Log in to OpenShift
         run: |
-          echo ${{ secrets.OPENSHIFT_TOKEN }} | oc login --token=- --server=${{ secrets.OPENSHIFT_SERVER }}
+          oc login --token=${{ secrets.OPENSHIFT_TOKEN }} --server=${{ secrets.OPENSHIFT_SERVER }}
 
       # 3. Set OpenShift project/namespace
       - name: Set OpenShift project
