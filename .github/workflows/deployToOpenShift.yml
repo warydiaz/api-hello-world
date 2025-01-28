@@ -34,9 +34,9 @@ jobs:
       - name: Set image tag
         id: set_tag
         run: |
-          COMMIT_MESSAGE="${{ github.event.workflow_run.head_commit.message }}"
-          COMMIT_TAG=$(echo $COMMIT_MESSAGE | awk '{print $NF}')
-          echo "IMAGE_TAG=${COMMIT_TAG}" >> $GITHUB_ENV
+          COMMIT_DATE=$(date -u +"%Y%m%d") # Asegúrate de usar el mismo formato de fecha
+          COMMIT_SHA=${{ github.event.workflow_run.head_sha }}
+          echo "IMAGE_TAG=${COMMIT_DATE}_${COMMIT_SHA}" >> $GITHUB_ENV
 
       # 5. Deploy the application
       - name: Deploy to OpenShift
