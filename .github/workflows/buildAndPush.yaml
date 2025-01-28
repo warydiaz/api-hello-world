@@ -41,10 +41,10 @@ jobs:
      # 4. Build the Docker image
      - name: Build Docker image
        run: |
-         docker build -t quay.io/${{ secrets.QUAY_USERNAME }}/api-hello-wworld:${{ env.commit_date }}_${{ github.sha }} .
+         docker build -f src/main/docker/Dockerfile.jvm -t quay.io/${{ secrets.QUAY_USERNAME }}/api-hello-wworld:${{ env.commit_date }}_${{ github.short_sha }} .
 
 
      # 5. Push the Docker image to Quay.io
      - name: Push Docker image
        run: |
-         docker push quay.io/${{ secrets.QUAY_USERNAME }}/api-hello-wworld:${{ env.commit_date }}_${{ github.sha }}
+         docker push quay.io/${{ secrets.QUAY_USERNAME }}/api-hello-wworld:${{ env.commit_date }}_${{ github.short_sha }}
