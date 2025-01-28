@@ -37,5 +37,5 @@ jobs:
 
       # 5. Run unit tests for other branches
       - name: Run unit tests for other branches
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')
+        if: github.event_name == 'push' &&  !(github.base_ref == 'main' || github.base_ref == 'develop')
         run: mvn test -Dtest=**/*Test.java
