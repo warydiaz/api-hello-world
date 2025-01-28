@@ -1,12 +1,14 @@
 name: Java CI
 
 on:
-  push:
-    branches:
-      - develop # Change "main" to your main branch name if it's different.
   pull_request:
     branches:
       - main
+      - develop
+  push:
+    branches-ignore:
+      - main
+      - develop
 
 jobs:
   build:
@@ -21,18 +23,19 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin' # Use Temurin JDK
-          java-version: '17'      # Change to the Java version you're using
+          distribution: 'temurin'
+          java-version: '17'
 
       # 3. Install dependencies
       - name: Build with Maven
         run: mvn clean install
 
-      # 4. Run tests
-      - name: Run tests on develop
-        if: github.ref == 'refs/heads/develop'  # Only runs on the 'develop' branch
-        run: mvn test -Dtest=**/*Test.java  # Run only tests ending with 'Test.java'
+      # 4. Run tests for PR to main or develop
+      - name: Run all tests for PR to main or develop
+        if: github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'develop')
+        run: mvn test
 
-      - name: Run all tests on main
-        if: github.ref == 'refs/heads/main'  # Only runs on the 'main' branch
-        run: mvn test  # Run all tests
+      # 5. Run unit tests for other branches
+      - name: Run unit tests for other branches
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')
+        run: mvn test -Dtest=**/*Test.java
