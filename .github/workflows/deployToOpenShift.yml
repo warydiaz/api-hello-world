@@ -90,10 +90,14 @@ jobs:
         run: |
           oc rollout status deployment/api-hello-wworld
 
-      # 9. Exponer el servicio via Route
+      # 9. Exponer el servicio via Route (si no existe)
       - name: Expose the service via Route
         run: |
-          oc expose svc/api-hello-wworld --name=api-hello-wworld-route
+          if ! oc get route api-hello-wworld-route &>/dev/null; then
+            oc expose svc/api-hello-wworld --name=api-hello-wworld-route
+          else
+            echo "Route api-hello-wworld-route already exists. Skipping..."
+          fi
 
       # 10. Verificar la URL de la aplicación
       - name: Verify application URL
