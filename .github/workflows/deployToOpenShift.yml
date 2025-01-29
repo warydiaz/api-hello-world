@@ -1,11 +1,11 @@
 name: Deploy to OpenShift
 
 on:
- workflow_run:
-   workflows:
-     - Build and Push to Quay.io
-   types:
-     - completed
+  workflow_run:
+    workflows:
+      - Build and Push to Quay.io
+    types:
+      - completed
 
 jobs:
   deploy:
@@ -13,6 +13,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       # 1. Instalar cliente OpenShift
       - name: Install OpenShift CLI
         run: |
@@ -30,22 +33,33 @@ jobs:
         run: |
           oc project ${{ secrets.OPENSHIFT_PROJECT }}
 
-      # 4. Extract commit date and short SHA for the image tag
+      # 4. Extraer commit date y SHA para el tag de la imagen
       - name: Set image tag
         id: set_tag
         run: |
-          COMMIT_DATE=$(date -u +"%Y%m%d") # Asegúrate de usar el mismo formato de fecha
+          COMMIT_DATE=$(date -u +"%Y%m%d")
           COMMIT_SHA=${{ github.event.workflow_run.head_sha }}
           echo "IMAGE_TAG=${COMMIT_DATE}_${COMMIT_SHA}" >> $GITHUB_ENV
 
-      # 5. Deploy the application
+      # 5. Apply Kubernetes manifest
+      - name: Apply Kubernetes manifest
+        run: |
+          DEPLOYMENT_FILE=$(find ./deployments -name "api-hello-wworld-:${{ env.IMAGE_TAG }}.yaml" | head -n 1)
+          if [ -f "$DEPLOYMENT_FILE" ]; then
+            oc apply -f "$DEPLOYMENT_FILE"
+          else
+            echo "Deployment file not found!"
+            exit 1
+          fi
+
+      # 6. Deploy the application
       - name: Deploy to OpenShift
         run: |
           IMAGE="quay.io/${{ secrets.QUAY_USERNAME }}/api-hello-wworld:${{ env.IMAGE_TAG }}"
           oc set image deployment/api-hello-wworld api-hello-wworld=$IMAGE
           oc rollout restart deployment/api-hello-wworld
 
-      # 6. Verify deployment status
+      # 7. Verify deployment status
       - name: Verify deployment
         run: |
           oc rollout status deployment/api-hello-wworld
