@@ -13,27 +13,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout del repositorio
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 1. Instalar cliente OpenShift
+      # 2. Instalar cliente OpenShift
       - name: Install OpenShift CLI
         run: |
           curl -LO https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz
           tar -xvf openshift-client-linux.tar.gz -C /usr/local/bin
           chmod +x /usr/local/bin/oc
 
-      # 2. Log in to OpenShift
+      # 3. Log in to OpenShift
       - name: Log in to OpenShift
         run: |
           oc login --token=${{ secrets.OPENSHIFT_TOKEN }} --server=${{ secrets.OPENSHIFT_SERVER }}
 
-      # 3. Set OpenShift project/namespace
+      # 4. Set OpenShift project/namespace
       - name: Set OpenShift project
         run: |
           oc project ${{ secrets.OPENSHIFT_PROJECT }}
 
-      # 4. Extraer commit date y SHA para el tag de la imagen
+      # 5. Extraer commit SHA y fecha para la imagen
       - name: Set image tag
         id: set_tag
         run: |
@@ -41,25 +42,37 @@ jobs:
           COMMIT_SHA=${{ github.event.workflow_run.head_sha }}
           echo "IMAGE_TAG=${COMMIT_DATE}_${COMMIT_SHA}" >> $GITHUB_ENV
 
-      # 5. Apply Kubernetes manifest
+      # 6. Generar archivo deployment.yaml
+      - name: Generate deployment YAML
+        run: |
+          cat <<EOF > deployment.yaml
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: api-hello-wworld
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: api-hello-wworld
+            template:
+              metadata:
+                labels:
+                  app: api-hello-wworld
+              spec:
+                containers:
+                - name: api-hello-wworld
+                  image: quay.io/${{ secrets.QUAY_USERNAME }}/api-hello-wworld:${{ env.IMAGE_TAG }}
+                  ports:
+                  - containerPort: 8080
+          EOF
+
+      # 7. Aplicar el deployment en OpenShift
       - name: Apply Kubernetes manifest
         run: |
-          DEPLOYMENT_FILE=$(find ./deployments -name "api-hello-wworld-:${{ env.IMAGE_TAG }}.yaml" | head -n 1)
-          if [ -f "$DEPLOYMENT_FILE" ]; then
-            oc apply -f "$DEPLOYMENT_FILE"
-          else
-            echo "Deployment file not found!"
-            exit 1
-          fi
+          oc apply -f deployment.yaml
 
-      # 6. Deploy the application
-      - name: Deploy to OpenShift
-        run: |
-          IMAGE="quay.io/${{ secrets.QUAY_USERNAME }}/api-hello-wworld:${{ env.IMAGE_TAG }}"
-          oc set image deployment/api-hello-wworld api-hello-wworld=$IMAGE
-          oc rollout restart deployment/api-hello-wworld
-
-      # 7. Verify deployment status
+      # 8. Verificar el despliegue
       - name: Verify deployment
         run: |
           oc rollout status deployment/api-hello-wworld
