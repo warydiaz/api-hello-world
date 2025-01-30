@@ -65,8 +65,8 @@ jobs:
         run: |
           RESPONSE=$(curl -s $APP_URL/hello)
           echo "Response: $RESPONSE"
-          if [[ "$RESPONSE" != "Hello world" ]]; then
-            echo "Test failed: Expected 'Hello world' but got '$RESPONSE'"
+          if [[ "$RESPONSE" != "Hello World" ]]; then
+            echo "Test failed: Expected 'Hello World' but got '$RESPONSE'"
             exit 1
           fi
           echo "Test passed!"
