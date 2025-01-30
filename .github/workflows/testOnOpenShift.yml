@@ -27,7 +27,7 @@ jobs:
       # 3. Obtener la URL de la aplicación desde OpenShift
       - name: Get Application URL from OpenShift
         run: |
-          APP_URL=$(oc get route api-hello-wworld-route -o jsonpath='{.spec.host}')
+          APP_URL=$(oc get route api-hello-wworld-route -n warydiaz-dev -o jsonpath='{.spec.host}')
           echo "APP_URL=$APP_URL" >> $GITHUB_ENV
         env:
           OPENSHIFT_TOKEN: ${{ secrets.OPENSHIFT_TOKEN }}
