@@ -1,0 +1,37 @@
+name: E2E Test on OpenShift
+
+on:
+  workflow_run:
+    workflows:
+      - Deploy to OpenShift
+    types:
+      - completed
+
+jobs:
+  e2e-test:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Obtener la URL de la aplicación desde OpenShift
+      - name: Get Application URL
+        run: |
+          APP_URL=$(oc get route api-hello-wworld-route -o jsonpath='{.spec.host}')
+          echo "APP_URL=http://$APP_URL" >> $GITHUB_ENV
+
+      # 2. Instalar dependencias para realizar test HTTP
+      - name: Install HTTP Client
+        run: |
+          sudo apt update
+          sudo apt install -y curl jq
+
+      # 3. Ejecutar Test de Integración
+      - name: Run E2E Test
+        run: |
+          RESPONSE=$(curl -s $APP_URL/hello)
+          echo "Response: $RESPONSE"
+          if [[ "$RESPONSE" != "Hello world" ]]; then
+            echo "Test failed: Expected 'Hello world' but got '$RESPONSE'"
+            exit 1
+          fi
+          echo "Test passed!"
