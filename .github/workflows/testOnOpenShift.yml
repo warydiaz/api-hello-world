@@ -12,7 +12,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Descargar la URL de la aplicación directamente desde OpenShift
+      # 1. Instalar OpenShift CLI (oc)
+      - name: Install OpenShift CLI
+        run: |
+          curl -LO https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz
+          tar -xvf openshift-client-linux.tar.gz -C /usr/local/bin
+          chmod +x /usr/local/bin/oc
+
+      # 2. Obtener la URL de la aplicación desde OpenShift
       - name: Get Application URL from OpenShift
         run: |
           APP_URL=$(oc get route api-hello-wworld-route -o jsonpath='{.spec.host}')
@@ -21,13 +28,13 @@ jobs:
           OPENSHIFT_TOKEN: ${{ secrets.OPENSHIFT_TOKEN }}
           OPENSHIFT_SERVER: ${{ secrets.OPENSHIFT_SERVER }}
 
-      # 2. Instalar dependencias para realizar test HTTP
+      # 3. Instalar dependencias para realizar test HTTP
       - name: Install HTTP Client
         run: |
           sudo apt update
           sudo apt install -y curl jq
 
-      # 3. Esperar a que la aplicación esté lista antes de probarla
+      # 4. Esperar a que la aplicación esté lista antes de probarla
       - name: Wait for Application to be Ready
         run: |
           MAX_RETRIES=10
@@ -48,7 +55,7 @@ jobs:
           echo "Application did not become ready in time."
           exit 1
 
-      # 4. Ejecutar Test de Integración
+      # 5. Ejecutar Test de Integración
       - name: Run E2E Test
         run: |
           RESPONSE=$(curl -s $APP_URL/hello)
