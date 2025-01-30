@@ -103,10 +103,10 @@ jobs:
       - name: Save Application URL
         run: |
           APP_URL=$(oc get route api-hello-wworld-route -o jsonpath='{.spec.host}')
-          echo "APP_URL=http://$APP_URL" > app-url.txt
+          echo "http://$APP_URL" > app-url.txt
 
       - name: Upload Application URL
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: app-url
           path: app-url.txt
