@@ -12,17 +12,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Descargar la URL de la aplicación desde el artifact
-      - name: Download Application URL
-        uses: actions/download-artifact@v4
-        with:
-          name: app-url
-
-      - name: Load Application URL
+      # 1. Descargar la URL de la aplicación directamente desde OpenShift
+      - name: Get Application URL from OpenShift
         run: |
-          APP_URL=$(cat app-url.txt)
+          APP_URL=$(oc get route api-hello-wworld-route -o jsonpath='{.spec.host}')
           echo "APP_URL=$APP_URL" >> $GITHUB_ENV
-        shell: bash
+        env:
+          OPENSHIFT_TOKEN: ${{ secrets.OPENSHIFT_TOKEN }}
+          OPENSHIFT_SERVER: ${{ secrets.OPENSHIFT_SERVER }}
 
       # 2. Instalar dependencias para realizar test HTTP
       - name: Install HTTP Client
