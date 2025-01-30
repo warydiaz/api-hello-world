@@ -19,7 +19,12 @@ jobs:
           tar -xvf openshift-client-linux.tar.gz -C /usr/local/bin
           chmod +x /usr/local/bin/oc
 
-      # 2. Obtener la URL de la aplicación desde OpenShift
+      # 2. Log in to OpenShift (esto configura el acceso)
+      - name: Log in to OpenShift
+        run: |
+          oc login --token=${{ secrets.OPENSHIFT_TOKEN }} --server=${{ secrets.OPENSHIFT_SERVER }}
+
+      # 3. Obtener la URL de la aplicación desde OpenShift
       - name: Get Application URL from OpenShift
         run: |
           APP_URL=$(oc get route api-hello-wworld-route -o jsonpath='{.spec.host}')
@@ -28,13 +33,13 @@ jobs:
           OPENSHIFT_TOKEN: ${{ secrets.OPENSHIFT_TOKEN }}
           OPENSHIFT_SERVER: ${{ secrets.OPENSHIFT_SERVER }}
 
-      # 3. Instalar dependencias para realizar test HTTP
+      # 4. Instalar dependencias para realizar test HTTP
       - name: Install HTTP Client
         run: |
           sudo apt update
           sudo apt install -y curl jq
 
-      # 4. Esperar a que la aplicación esté lista antes de probarla
+      # 5. Esperar a que la aplicación esté lista antes de probarla
       - name: Wait for Application to be Ready
         run: |
           MAX_RETRIES=10
@@ -55,7 +60,7 @@ jobs:
           echo "Application did not become ready in time."
           exit 1
 
-      # 5. Ejecutar Test de Integración
+      # 6. Ejecutar Test de Integración
       - name: Run E2E Test
         run: |
           RESPONSE=$(curl -s $APP_URL/hello)
